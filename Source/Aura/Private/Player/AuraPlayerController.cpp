@@ -4,10 +4,76 @@
 #include "Player/AuraPlayerController.h"
 #include "EnhancedInputSubsystems.h"
 #include "EnhancedInputComponent.h"
+#include "Interaction/EnemyInterface.h"
 
 AAuraPlayerController::AAuraPlayerController()
 {
 	bReplicates = true;
+}
+
+void AAuraPlayerController::PlayerTick(float DeltaTime)
+{
+	Super::PlayerTick(DeltaTime);
+
+	CursorTrace();
+}
+
+void AAuraPlayerController::CursorTrace()
+{
+	FHitResult CursorHit;
+	GetHitResultUnderCursor(ECollisionChannel::ECC_Visibility, false, CursorHit);
+	if (!CursorHit.bBlockingHit) return;
+
+	LastActor = ThisActor;
+	ThisActor = Cast<IEnemyInterface>(CursorHit.GetActor());
+	
+	/**
+	 * 光标进行线性追踪的几种情况：
+	 * A. LastActor is null && ThisActor is null
+	 *		- Do nothing
+	 * B. LastActor is null && ThisActor is valid
+	 *		- Highlight ThisActor
+	 * C. LastActor is valid && ThisActor is null
+	 *		- UnHighlight LastActor
+	 * D. Both actors are valid, but LastActor != ThisActor
+	 *		- UnHighlight LastActor, and Highlight ThisActor
+	 * E. Both actors are valid, and LastActor == ThisActor
+	 *		- Do nothing
+	 */
+
+	if (LastActor == nullptr)
+	{
+		if (ThisActor != nullptr)
+		{
+			//情况B
+			ThisActor->HighlightActor();
+		}
+		else 
+		{
+			//情况A
+		}
+	}
+	else // LastActor is valid
+	{
+		if (ThisActor == nullptr)
+		{
+			//情况C
+			LastActor->UnHighlightActor();
+		}
+		else // Both actors are valid
+		{
+			if (LastActor != ThisActor)
+			{
+				//情况D
+				LastActor->UnHighlightActor();
+				ThisActor->HighlightActor();
+			}
+			else // LastActor == ThisActor
+			{
+				//情况E
+			}
+		}
+	}
 }
 
 void AAuraPlayerController::BeginPlay()
@@ -53,3 +119,4 @@ void AAuraPlayerController::Move(const FInputActionValue& InputActionValue)
 		ControlledPawn->AddMovementInput(RightDirection, InputAxisVector.X);
 	}
 }
+
