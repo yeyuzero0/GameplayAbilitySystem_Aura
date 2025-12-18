@@ -44,6 +44,8 @@ public:
 	//用结构体的形式设置包含的变量
 	UFUNCTION(BlueprintCallable)
 	void SetWidgetControllerParams(const FWidgetControllerParams& WCParams);
+
+	UFUNCTION(BlueprintCallable)
 	virtual void BroadcastInitialValues();
 	virtual void BindCallbackToDependencies();
 protected:

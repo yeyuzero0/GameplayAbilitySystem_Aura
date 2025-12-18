@@ -13,6 +13,7 @@
 	GAMEPLAYATTRIBUTE_VALUE_SETTER(PropertyName) \
  	GAMEPLAYATTRIBUTE_VALUE_INITTER(PropertyName)
 
+
 USTRUCT()
 struct FEffectProperties
 {
@@ -48,6 +49,10 @@ struct FEffectProperties
 
 };
 
+//typedef 是专门针对 FGameplayAttribute() 的签名，但是 TStaticFuncPtr 是通用的，适用于任何签名
+//typedef TBaseStaticDelegateInstance<FGameplayAttribute(), FDefaultDelegateUserPolicy>::FFuncPtr FAttributeFuncPtr;
+template<class T>
+using TStaticFuncPtr = typename TBaseStaticDelegateInstance<T, FDefaultDelegateUserPolicy>::FFuncPtr;
 
 /**
  * 
@@ -63,6 +68,9 @@ public:
 
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;
 	virtual void PostGameplayEffectExecute(const FGameplayEffectModCallbackData& Data) override;
+
+	TMap<FGameplayTag, TStaticFuncPtr<FGameplayAttribute()>> TagsToAttributes;
+
 
 	/*
 	* Primary Attributes
