@@ -100,10 +100,10 @@ void AAuraPlayerController::AbilityInputTagReleased(FGameplayTag InputTag)
 				bAutoRunning = true;
 			}
 		}
-
-		FollowTime = 0.f;
-		bTargeting = false;
 	}
+
+	FollowTime = 0.f;
+	bTargeting = false;
 }
 
 void AAuraPlayerController::AbilityInputTagHeld(FGameplayTag InputTag)
