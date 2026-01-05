@@ -8,6 +8,9 @@
 #include "GameFramework/Character.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "AuraGameplayTags.h"
+#include "Interaction/CombatInterface.h"
+#include "Kismet/GameplayStatics.h"
+#include "Player/AuraPlayerController.h"
 
 
 UAuraAttributeSet::UAuraAttributeSet()
@@ -138,11 +141,29 @@ void UAuraAttributeSet::PostGameplayEffectExecute(const FGameplayEffectModCallba
 			SetHealth(FMath::Clamp(NewHealth, 0.f, GetMaxHealth()));
 			
 			const bool bFatal = NewHealth <= 0.f;
-			if (!bFatal)
+			if (bFatal) // 调用死亡函数
+			{
+				ICombatInterface* CombatInterface = Cast<ICombatInterface>(Props.TargetAvatarActor);
+				if (CombatInterface)
+				{
+					CombatInterface->Die();
+				}
+			}
+			else // 激活受击反应ability
 			{
 				FGameplayTagContainer TagContainer;
 				TagContainer.AddTag(FAuraGameplayTags::Get().Effects_HitReact);
 				Props.TargetASC->TryActivateAbilitiesByTag(TagContainer);
+			}
+
+			//调用显示伤害数字函数
+			if (Props.SourceCharacter != Props.TargetCharacter)
+			{
+				AAuraPlayerController* AuraPC = Cast<AAuraPlayerController>(UGameplayStatics::GetPlayerController(Props.SourceCharacter, 0));
+				if (AuraPC)
+				{
+					AuraPC->ShowDamageNumber(LocalIncomingDamage, Props.TargetCharacter);
+				}
 			}
 		}
 	}
